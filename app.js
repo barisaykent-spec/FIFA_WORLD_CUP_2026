@@ -1,8 +1,8 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=2";
-import { FIXTURES } from "./fixtures.js?v=2";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=3";
+import { FIXTURES } from "./fixtures.js?v=3";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -156,13 +156,13 @@ function startApp() {
 
   onSnapshot(query(collection(db, "predictions")), (snap) => {
     predictions = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-    renderMatches(); renderLeaderboard();
+    renderMatches(); renderLeaderboard(); renderAdminUsers();
     if (currentMatchId) refreshModal();
   });
 
   onSnapshot(query(collection(db, "users")), (snap) => {
     users = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-    renderLeaderboard();
+    renderLeaderboard(); renderAdminUsers();
   });
 
   setupTabs();
@@ -442,6 +442,7 @@ function showAdminPanel() {
   $("adminLogin").classList.add("hidden");
   $("adminPanel").classList.remove("hidden");
   renderAdminMatches();
+  renderAdminUsers();
 }
 
 async function addMatch() {
@@ -517,6 +518,39 @@ function renderAdminMatches() {
       const preds = predictions.filter(p => p.matchId === id);
       for (const p of preds) await deleteDoc(doc(db, "predictions", p.id));
       adminMsg("Maç silindi.", false);
+    });
+  });
+}
+
+function renderAdminUsers() {
+  if (!isAdmin) return;
+  const box = $("adminUserList");
+  if (!box) return;
+  const list = users.filter(u => u.name);
+  if (!list.length) { box.innerHTML = `<p class="muted">Henüz oyuncu yok.</p>`; return; }
+  list.sort((a,b) => (a.name||"").localeCompare(b.name||""));
+
+  box.innerHTML = list.map(u => {
+    const cnt = predictions.filter(p => p.uid === u.id).length;
+    return `
+      <div class="amatch urow" data-id="${u.id}">
+        <div>
+          <div class="amatch-top">${esc(u.name)}${u.id===uid?" (sen)":""}</div>
+          <div class="amatch-sub">${cnt} tahmin</div>
+        </div>
+        <button class="urow-del">🗑️ Sil</button>
+      </div>`;
+  }).join("");
+
+  box.querySelectorAll(".urow").forEach(el => {
+    el.querySelector(".urow-del").addEventListener("click", async () => {
+      const id = el.dataset.id;
+      const u = users.find(x => x.id === id);
+      if (!confirm(`"${u?.name || "?"}" oyuncusu ve tüm tahminleri silinsin mi?`)) return;
+      const preds = predictions.filter(p => p.uid === id);
+      for (const p of preds) await deleteDoc(doc(db, "predictions", p.id));
+      await deleteDoc(doc(db, "users", id));
+      adminMsg("Oyuncu silindi.", false);
     });
   });
 }

@@ -248,6 +248,10 @@ main { padding: 16px 14px 100px; max-width: 640px; margin: 0 auto; }
 .amatch-save { padding: 9px 14px; border: none; border-radius: 10px;
   background: linear-gradient(135deg, var(--green), #1fc488); color: #052b1d; font-weight: 800; cursor: pointer; font-size: 13px; }
 .amatch-del { background: none; border: none; color: var(--red); cursor: pointer; font-size: 12px; margin-top: 10px; padding: 4px; font-weight: 600; }
+.urow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.urow-del { background: rgba(255,77,109,.14); border: 1px solid rgba(255,77,109,.25); color: var(--red);
+  padding: 9px 14px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 13px; white-space: nowrap; }
+.urow-del:hover { background: rgba(255,77,109,.24); }
 
 /* ---------- Modal ---------- */
 .modal {
