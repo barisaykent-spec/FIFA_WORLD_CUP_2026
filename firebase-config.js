@@ -26,7 +26,7 @@ export const firebaseConfig = {
 
 // Yönetici (maç ekleyen / skor giren kişi) için şifre.
 // Bunu kendine göre değiştir. Aile içi kullanım için yeterlidir.
-export const ADMIN_PIN = "1234";
+export const ADMIN_PIN = "baris1980";
 
 // Lig adı (ekranın üstünde görünür).
 export const LIG_ADI = "Aile Dünya Kupası Ligi";
