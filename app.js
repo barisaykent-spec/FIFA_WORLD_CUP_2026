@@ -1,8 +1,8 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js";
-import { FIXTURES } from "./fixtures.js";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=2";
+import { FIXTURES } from "./fixtures.js?v=2";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
