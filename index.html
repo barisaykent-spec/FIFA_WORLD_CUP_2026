@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b132b" />
+  <title>Dünya Kupası Tahmin Ligi</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="assets/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- İsim girme ekranı -->
+  <div id="nameGate" class="gate hidden">
+    <div class="gate-card">
+      <div class="trophy">🏆</div>
+      <h1 id="gateTitle">Tahmin Ligi</h1>
+      <p>Lige katılmak için adını yaz. Sıralamada bu isimle görüneceksin.</p>
+      <input id="nameInput" type="text" maxlength="20" placeholder="Adın (örn. Barış)" />
+      <button id="nameSaveBtn" class="btn-primary">Lige Katıl</button>
+      <div id="nameError" class="error"></div>
+    </div>
+  </div>
+
+  <!-- Yükleniyor -->
+  <div id="loader" class="loader">
+    <div class="spinner"></div>
+    <p id="loaderText">Bağlanıyor…</p>
+  </div>
+
+  <!-- Ana uygulama -->
+  <div id="app" class="hidden">
+    <header class="topbar">
+      <div class="topbar-title">
+        <span class="trophy-sm">🏆</span>
+        <span id="ligName">Tahmin Ligi</span>
+      </div>
+      <div class="topbar-user">
+        <span id="meName" class="me-name"></span>
+      </div>
+    </header>
+
+    <main>
+      <!-- MAÇLAR -->
+      <section id="page-matches" class="page active">
+        <div id="matchFilters" class="filters"></div>
+        <div id="matchList" class="match-list"></div>
+        <div id="matchEmpty" class="empty hidden">
+          Henüz maç eklenmemiş. Yönetici sekmesinden maç ekleyebilirsin.
+        </div>
+      </section>
+
+      <!-- LİG / SIRALAMA -->
+      <section id="page-league" class="page">
+        <h2 class="page-title">Puan Sıralaması</h2>
+        <div class="legend">
+          <span><b>+1</b> kazananı bilmek</span>
+          <span><b>+1</b> kesin skoru bilmek</span>
+        </div>
+        <div id="leaderboard" class="leaderboard"></div>
+        <div id="leagueEmpty" class="empty hidden">Henüz puan yok.</div>
+      </section>
+
+      <!-- YÖNETİCİ -->
+      <section id="page-admin" class="page">
+        <h2 class="page-title">Yönetici</h2>
+
+        <div id="adminLogin" class="admin-box">
+          <p>Maç eklemek ve gerçek skorları girmek için yönetici şifresini gir.</p>
+          <input id="adminPin" type="password" placeholder="Yönetici şifresi" />
+          <button id="adminLoginBtn" class="btn-primary">Giriş</button>
+          <div id="adminError" class="error"></div>
+        </div>
+
+        <div id="adminPanel" class="hidden">
+          <div class="admin-box">
+            <h3>Yeni Maç Ekle</h3>
+            <div class="form-row">
+              <input id="newHome" placeholder="Ev sahibi (örn. Türkiye)" />
+              <input id="newAway" placeholder="Deplasman (örn. Brezilya)" />
+            </div>
+            <div class="form-row">
+              <input id="newStage" placeholder="Aşama (örn. A Grubu)" />
+              <input id="newKickoff" type="datetime-local" />
+            </div>
+            <button id="addMatchBtn" class="btn-primary">Maçı Ekle</button>
+            <button id="loadFixturesBtn" class="btn-ghost">Başlangıç Fikstürünü Yükle</button>
+            <div id="adminMsg" class="ok-msg"></div>
+          </div>
+
+          <div class="admin-box">
+            <h3>Skor Gir / Maç Yönet</h3>
+            <p class="muted">Gerçek skoru girip kaydedince herkesin tahmini otomatik değerlendirilir.</p>
+            <div id="adminMatchList" class="admin-match-list"></div>
+          </div>
+
+          <button id="adminLogoutBtn" class="btn-ghost">Yönetici çıkışı</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Alt menü -->
+    <nav class="tabbar">
+      <button class="tab active" data-page="matches">
+        <span class="tab-ico">⚽</span><span>Maçlar</span>
+      </button>
+      <button class="tab" data-page="league">
+        <span class="tab-ico">🏅</span><span>Lig</span>
+      </button>
+      <button class="tab" data-page="admin">
+        <span class="tab-ico">⚙️</span><span>Yönetici</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Tahmin penceresi -->
+  <div id="predictModal" class="modal hidden">
+    <div class="modal-card">
+      <button class="modal-close" id="predictClose">✕</button>
+      <div id="predStage" class="pred-stage"></div>
+      <div class="pred-teams">
+        <div class="pred-team">
+          <div id="predHomeName" class="pred-team-name"></div>
+          <input id="predHomeScore" type="number" min="0" max="99" inputmode="numeric" />
+        </div>
+        <div class="pred-vs">-</div>
+        <div class="pred-team">
+          <div id="predAwayName" class="pred-team-name"></div>
+          <input id="predAwayScore" type="number" min="0" max="99" inputmode="numeric" />
+        </div>
+      </div>
+      <div id="predKickoff" class="pred-kickoff"></div>
+      <button id="predSaveBtn" class="btn-primary">Tahmini Kaydet</button>
+      <div id="predMsg" class="ok-msg"></div>
+
+      <div id="predOthers" class="pred-others"></div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
