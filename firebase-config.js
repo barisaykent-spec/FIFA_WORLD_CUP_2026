@@ -15,12 +15,13 @@
 // ============================================================
 
 export const firebaseConfig = {
-  apiKey: "BURAYA_API_KEY",
-  authDomain: "BURAYA.firebaseapp.com",
-  projectId: "BURAYA_PROJECT_ID",
-  storageBucket: "BURAYA.appspot.com",
-  messagingSenderId: "BURAYA_SENDER_ID",
-  appId: "BURAYA_APP_ID"
+  apiKey: "AIzaSyBC-NtqfuQJNS7IY-oZYFw2NsvuxtbnRfk",
+  authDomain: "worldcup-2026-18551.firebaseapp.com",
+  projectId: "worldcup-2026-18551",
+  storageBucket: "worldcup-2026-18551.firebasestorage.app",
+  messagingSenderId: "73673156328",
+  appId: "1:73673156328:web:5612b284b5996eed79cb5d",
+  measurementId: "G-5ZK29RP4Q8"
 };
 
 // Yönetici (maç ekleyen / skor giren kişi) için şifre.
