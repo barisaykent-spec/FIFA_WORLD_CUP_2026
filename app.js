@@ -1,8 +1,8 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=3";
-import { FIXTURES } from "./fixtures.js?v=3";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=4";
+import { FIXTURES } from "./fixtures.js?v=4";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -461,19 +461,28 @@ async function addMatch() {
 
 async function loadFixtures() {
   if (!FIXTURES.length) { adminMsg("fixtures.js boş.", true); return; }
-  let added = 0;
-  for (const f of FIXTURES) {
-    const id = "fx_" + (f.kickoff||"") + "_" + f.home + "_" + f.away;
-    const ref = doc(db, "matches", id.replace(/[^a-zA-Z0-9_]/g, "-"));
-    const exist = await getDoc(ref);
-    if (exist.exists()) continue;
-    await setDoc(ref, {
-      home:f.home, away:f.away, stage:f.stage||"", kickoff:f.kickoff||"",
-      finished:false, realHome:null, realAway:null
-    });
-    added++;
+  const fxId = (f) => ("fx_" + f.stage + "_" + f.home + "_" + f.away).replace(/[^a-zA-Z0-9_]/g, "-");
+  const wanted = new Map(FIXTURES.map(f => [fxId(f), f]));
+
+  // Artık listede olmayan eski fikstür maçlarını (ör. yanlış saatli kopyalar) temizle
+  let removed = 0;
+  const snap = await getDocs(collection(db, "matches"));
+  for (const d of snap.docs) {
+    if (d.id.startsWith("fx") && !wanted.has(d.id)) {
+      const preds = predictions.filter(p => p.matchId === d.id);
+      for (const p of preds) await deleteDoc(doc(db, "predictions", p.id));
+      await deleteDoc(doc(db, "matches", d.id));
+      removed++;
+    }
   }
-  adminMsg(added ? `${added} maç eklendi ✓` : "Tüm fikstür zaten yüklü.", false);
+
+  // Maçları ekle / güncelle — girilen gerçek skorlara dokunmaz (merge)
+  for (const [id, f] of wanted) {
+    await setDoc(doc(db, "matches", id),
+      { home: f.home, away: f.away, stage: f.stage || "", kickoff: f.kickoff || "" },
+      { merge: true });
+  }
+  adminMsg(`${wanted.size} maç güncellendi${removed ? `, ${removed} eski temizlendi` : ""} ✓`, false);
 }
 
 function adminMsg(text, isError) {
