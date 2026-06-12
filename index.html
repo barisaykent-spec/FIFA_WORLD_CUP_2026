@@ -45,6 +45,12 @@
     <main>
       <!-- MAÇLAR -->
       <section id="page-matches" class="page active">
+        <div class="search-wrap">
+          <span class="search-ico">🔍</span>
+          <input id="matchSearch" type="search" inputmode="search" autocomplete="off"
+                 placeholder="Takım ara (örn. Türkiye)" />
+          <button id="matchSearchClear" class="search-clear hidden" aria-label="Temizle">✕</button>
+        </div>
         <div id="matchFilters" class="filters"></div>
         <div id="matchList" class="match-list"></div>
         <div id="matchEmpty" class="empty hidden">
@@ -145,6 +151,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=4"></script>
+  <script type="module" src="app.js?v=5"></script>
 </body>
 </html>

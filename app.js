@@ -1,8 +1,8 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=4";
-import { FIXTURES } from "./fixtures.js?v=4";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=5";
+import { FIXTURES } from "./fixtures.js?v=5";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -32,6 +32,7 @@ let matches = [];          // {id, ...}
 let predictions = [];      // {id, matchId, uid, name, home, away}
 let users = [];            // {id(uid), name}
 let activeFilter = "all";
+let searchText = "";
 let currentMatchId = null;
 
 // ---------- Kısa yardımcılar ----------
@@ -166,9 +167,28 @@ function startApp() {
   });
 
   setupTabs();
+  setupSearch();
   setupAdmin();
   setupModal();
   if (isAdmin) showAdminPanel();
+}
+
+function setupSearch() {
+  const input = $("matchSearch");
+  const clear = $("matchSearchClear");
+  if (!input) return;
+  input.addEventListener("input", () => {
+    searchText = input.value;
+    clear.classList.toggle("hidden", !input.value);
+    renderMatches();
+  });
+  clear.addEventListener("click", () => {
+    input.value = "";
+    searchText = "";
+    clear.classList.add("hidden");
+    renderMatches();
+    input.focus();
+  });
 }
 
 // ============================================================
@@ -203,12 +223,22 @@ function renderMatches() {
   filterBox.querySelectorAll("button").forEach(b =>
     b.addEventListener("click", () => { activeFilter = b.dataset.f; renderMatches(); }));
 
-  const list = activeFilter === "all" ? matches : matches.filter(m => m.stage === activeFilter);
+  let list = activeFilter === "all" ? matches : matches.filter(m => m.stage === activeFilter);
+
+  // Takım ismine göre arama (Türkçe büyük/küçük harf duyarsız)
+  const q = searchText.trim().toLocaleLowerCase("tr");
+  if (q) list = list.filter(m => `${m.home} ${m.away}`.toLocaleLowerCase("tr").includes(q));
+
   const box = $("matchList");
 
   if (!list.length) {
-    box.innerHTML = "";
-    $("matchEmpty").classList.toggle("hidden", matches.length > 0);
+    if (q) {
+      box.innerHTML = `<div class="empty">"${esc(searchText.trim())}" için maç bulunamadı.</div>`;
+      $("matchEmpty").classList.add("hidden");
+    } else {
+      box.innerHTML = "";
+      $("matchEmpty").classList.toggle("hidden", matches.length > 0);
+    }
     return;
   }
   $("matchEmpty").classList.add("hidden");

@@ -116,6 +116,27 @@ main { padding: 16px 14px 100px; max-width: 640px; margin: 0 auto; }
 @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .page-title { font-size: 22px; margin: 8px 2px 16px; font-weight: 900; letter-spacing: -.5px; }
 
+/* ---------- Search ---------- */
+.search-wrap { position: relative; margin-bottom: 12px; }
+.search-ico {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  font-size: 15px; opacity: .6; pointer-events: none;
+}
+#matchSearch {
+  width: 100%; padding: 13px 40px 13px 40px; border-radius: 14px;
+  border: 1px solid var(--line); background: var(--card);
+  color: var(--text); font-size: 15px; -webkit-appearance: none; appearance: none;
+}
+#matchSearch::placeholder { color: var(--muted); }
+#matchSearch:focus { outline: none; border-color: var(--accent); background: rgba(0,0,0,.25); }
+#matchSearch::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.search-clear {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; border-radius: 50%; border: none;
+  background: var(--card2); color: var(--muted); font-size: 13px; cursor: pointer;
+}
+.search-clear:hover { color: var(--text); }
+
 /* ---------- Filters ---------- */
 .filters { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 14px; scrollbar-width: none; }
 .filters::-webkit-scrollbar { display: none; }
