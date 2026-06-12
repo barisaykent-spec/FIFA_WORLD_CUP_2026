@@ -1,8 +1,8 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=5";
-import { FIXTURES } from "./fixtures.js?v=5";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=6";
+import { FIXTURES } from "./fixtures.js?v=6";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -51,6 +51,15 @@ function isLocked(m) {
   if (!m.kickoff) return false;
   return new Date(m.kickoff).getTime() <= Date.now();
 }
+// Maç bugün mü oynanıyor? (yerel takvim gününe göre)
+function isToday(iso) {
+  if (!iso) return false;
+  const d = new Date(iso);
+  if (isNaN(d)) return false;
+  const n = new Date();
+  return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate();
+}
+
 // 1 = ev sahibi kazanır, 0 = beraberlik, -1 = deplasman kazanır
 const sign = (h, a) => (h > a ? 1 : h < a ? -1 : 0);
 
@@ -253,6 +262,7 @@ function renderMatches() {
     const mp = myPred(m.id);
     const locked = isLocked(m);
     const live = locked && !m.finished;
+    const today = isToday(m.kickoff);
 
     let scoreHtml;
     if (m.finished && m.realHome != null) {
@@ -290,9 +300,9 @@ function renderMatches() {
     }
 
     html += `
-      <div class="match" data-id="${m.id}">
+      <div class="match${today ? " today" : ""}" data-id="${m.id}">
         <div class="match-top">
-          <span class="match-stage">${esc(m.stage||"")}</span>
+          <span class="match-stage">${esc(m.stage||"")}${today ? ` <span class="today-tag">BUGÜN</span>` : ""}</span>
           ${timeHtml}
         </div>
         <div class="match-row">
