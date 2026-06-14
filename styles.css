@@ -157,8 +157,8 @@ main { padding: 16px 14px 100px; max-width: 640px; margin: 0 auto; }
   letter-spacing: 1px; margin: 12px 4px 2px; display: flex; align-items: center; gap: 8px;
 }
 .stage-head::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-.stage-head.soon-head { font-size: 13px; color: var(--accent); }
-.stage-head.soon-head::after { background: linear-gradient(90deg, var(--accent), transparent); opacity: .5; }
+.stage-head.soon-head { font-size: 13px; color: #39ff14; text-shadow: 0 0 8px rgba(57,255,20,.5); }
+.stage-head.soon-head::after { background: linear-gradient(90deg, #39ff14, transparent); opacity: .6; }
 
 .match {
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025));
@@ -168,17 +168,23 @@ main { padding: 16px 14px 100px; max-width: 640px; margin: 0 auto; }
 }
 .match:hover { border-color: rgba(200,255,0,.4); box-shadow: 0 12px 30px rgba(0,0,0,.35); transform: translateY(-1px); }
 .match:active { transform: scale(.995); }
-/* Son 24 saat içindeki maçlar: belirgin çerçeve */
+/* Son 24 saat içindeki maçlar: kalın, fosforlu neon yeşil çerçeve */
 .match.soon {
-  border-color: var(--accent);
-  background: linear-gradient(180deg, rgba(200,255,0,.09), rgba(255,255,255,.02));
-  box-shadow: 0 0 0 1px var(--accent), 0 10px 28px rgba(200,255,0,.14);
+  border: 3px solid #39ff14;
+  background: linear-gradient(180deg, rgba(57,255,20,.12), rgba(255,255,255,.02));
+  box-shadow: 0 0 22px rgba(57,255,20,.55), inset 0 0 14px rgba(57,255,20,.12);
+  animation: soonGlow 1.8s ease-in-out infinite;
 }
-.match.soon:hover { border-color: var(--accent); }
+@keyframes soonGlow {
+  0%, 100% { box-shadow: 0 0 14px rgba(57,255,20,.45), inset 0 0 10px rgba(57,255,20,.10); }
+  50%      { box-shadow: 0 0 30px rgba(57,255,20,.85), inset 0 0 18px rgba(57,255,20,.16); }
+}
+.match.soon:hover { border-color: #5bff45; transform: translateY(-1px); }
 .soon-tag {
   display: inline-block; font-size: 10px; font-weight: 900; letter-spacing: .5px;
-  color: var(--accent-ink); background: var(--accent);
+  color: #062b00; background: #39ff14;
   padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-left: 4px;
+  box-shadow: 0 0 10px rgba(57,255,20,.7);
 }
 .match-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .match-stage { font-size: 11px; color: var(--muted); font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
