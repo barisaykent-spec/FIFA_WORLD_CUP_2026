@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "*/30 * * * *"   # her 30 dakikada bir
   workflow_dispatch:          # elle de tetiklenebilir
+    inputs:
+      test:
+        description: "Test bildirimi gönder (tüm jetonlara)"
+        type: boolean
+        default: false
 
 jobs:
   notify:
@@ -23,4 +28,5 @@ jobs:
         working-directory: notifier
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TEST_NOTIFY: ${{ inputs.test && '1' || '' }}
         run: node send-reminders.js

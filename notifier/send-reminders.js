@@ -28,6 +28,25 @@ const messaging = admin.messaging();
     db.collection("reminders").get()
   ]);
 
+  // --- TEST MODU: tüm kayıtlı jetonlara koşulsuz bildirim ---
+  if (process.env.TEST_NOTIFY === "1" || process.env.TEST_NOTIFY === "true") {
+    const all = [];
+    tokensSnap.forEach((d) => { const x = d.data(); if (x.token) all.push(x.token); });
+    console.log("Kayıtlı jeton sayısı:", all.length);
+    if (!all.length) {
+      console.log("Jeton yok — önce uygulamada '🔔 Maç hatırlatmalarını aç' ile izin verilmeli.");
+      return;
+    }
+    const res = await messaging.sendEachForMulticast({
+      tokens: all,
+      notification: { title: "🔔 Test bildirimi", body: "Dünya Kupası Tahmin Ligi bildirimleri çalışıyor! ⚽" },
+      webpush: { fcmOptions: { link: SITE_URL } }
+    });
+    console.log(`Test: ${res.successCount}/${all.length} bildirim gönderildi.`);
+    res.responses.forEach((r, i) => { if (!r.success) console.log("  hata:", r.error && r.error.code); });
+    return;
+  }
+
   // Önümüzdeki 24 saatte başlayacak, bitmemiş maçlar
   const soon = [];
   matchesSnap.forEach((d) => {
