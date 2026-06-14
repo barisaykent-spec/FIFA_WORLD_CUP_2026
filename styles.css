@@ -166,14 +166,14 @@ main { padding: 16px 14px 100px; max-width: 640px; margin: 0 auto; }
 }
 .match:hover { border-color: rgba(200,255,0,.4); box-shadow: 0 12px 30px rgba(0,0,0,.35); transform: translateY(-1px); }
 .match:active { transform: scale(.995); }
-/* Bugünün maçları: belirgin çerçeve */
-.match.today {
+/* Son 24 saat içindeki maçlar: belirgin çerçeve */
+.match.soon {
   border-color: var(--accent);
   background: linear-gradient(180deg, rgba(200,255,0,.09), rgba(255,255,255,.02));
   box-shadow: 0 0 0 1px var(--accent), 0 10px 28px rgba(200,255,0,.14);
 }
-.match.today:hover { border-color: var(--accent); }
-.today-tag {
+.match.soon:hover { border-color: var(--accent); }
+.soon-tag {
   display: inline-block; font-size: 10px; font-weight: 900; letter-spacing: .5px;
   color: var(--accent-ink); background: var(--accent);
   padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-left: 4px;

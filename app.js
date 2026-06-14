@@ -1,8 +1,8 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=6";
-import { FIXTURES } from "./fixtures.js?v=6";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=7";
+import { FIXTURES } from "./fixtures.js?v=7";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -51,13 +51,13 @@ function isLocked(m) {
   if (!m.kickoff) return false;
   return new Date(m.kickoff).getTime() <= Date.now();
 }
-// Maç bugün mü oynanıyor? (yerel takvim gününe göre)
-function isToday(iso) {
+// Maç önümüzdeki 24 saat içinde mi başlıyor? (gece maçlarını kaçırmamak için)
+function isSoon(iso) {
   if (!iso) return false;
-  const d = new Date(iso);
-  if (isNaN(d)) return false;
-  const n = new Date();
-  return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate();
+  const t = new Date(iso).getTime();
+  if (isNaN(t)) return false;
+  const diff = t - Date.now();
+  return diff >= 0 && diff <= 24 * 60 * 60 * 1000;
 }
 
 // 1 = ev sahibi kazanır, 0 = beraberlik, -1 = deplasman kazanır
@@ -262,7 +262,7 @@ function renderMatches() {
     const mp = myPred(m.id);
     const locked = isLocked(m);
     const live = locked && !m.finished;
-    const today = isToday(m.kickoff);
+    const soon = isSoon(m.kickoff);
 
     let scoreHtml;
     if (m.finished && m.realHome != null) {
@@ -300,9 +300,9 @@ function renderMatches() {
     }
 
     html += `
-      <div class="match${today ? " today" : ""}" data-id="${m.id}">
+      <div class="match${soon ? " soon" : ""}" data-id="${m.id}">
         <div class="match-top">
-          <span class="match-stage">${esc(m.stage||"")}${today ? ` <span class="today-tag">BUGÜN</span>` : ""}</span>
+          <span class="match-stage">${esc(m.stage||"")}${soon ? ` <span class="soon-tag">SON 24 SAAT</span>` : ""}</span>
           ${timeHtml}
         </div>
         <div class="match-row">
