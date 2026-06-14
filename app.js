@@ -1,8 +1,8 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=9";
-import { FIXTURES } from "./fixtures.js?v=9";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY } from "./firebase-config.js?v=10";
+import { FIXTURES } from "./fixtures.js?v=10";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -12,6 +12,9 @@ import {
   getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc,
   onSnapshot, serverTimestamp, query
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getMessaging, getToken, onMessage, isSupported
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
 // ---------- Kurulum kontrolü ----------
 if (firebaseConfig.apiKey.startsWith("BURAYA")) {
@@ -179,7 +182,81 @@ function startApp() {
   setupSearch();
   setupAdmin();
   setupModal();
+  setupNotifications();
   if (isAdmin) showAdminPanel();
+}
+
+// ============================================================
+//  Bildirimler (Firebase Cloud Messaging)
+// ============================================================
+let swReg = null;
+
+async function setupNotifications() {
+  const btn = $("notifBtn");
+  if (!btn) return;
+
+  // Tarayıcı desteklemiyorsa butonu hiç gösterme
+  let supported = false;
+  try { supported = await isSupported(); } catch { supported = false; }
+  if (!supported || !("serviceWorker" in navigator) || !VAPID_KEY || VAPID_KEY.startsWith("BURAYA")) {
+    btn.classList.add("hidden");
+    return;
+  }
+
+  try {
+    swReg = await navigator.serviceWorker.register("firebase-messaging-sw.js");
+  } catch (e) {
+    console.warn("Service worker kaydı başarısız:", e);
+    btn.classList.add("hidden");
+    return;
+  }
+
+  // İzin durumu
+  if (Notification.permission === "granted") {
+    btn.classList.add("hidden");
+    registerFcmToken();
+  } else if (Notification.permission === "denied") {
+    btn.classList.add("hidden"); // kullanıcı reddetmiş, zorlamayalım
+  } else {
+    btn.classList.remove("hidden");
+  }
+
+  btn.addEventListener("click", async () => {
+    const perm = await Notification.requestPermission();
+    if (perm === "granted") {
+      btn.classList.add("hidden");
+      registerFcmToken();
+    } else {
+      btn.textContent = "Bildirim izni verilmedi";
+      setTimeout(() => btn.classList.add("hidden"), 2500);
+    }
+  });
+
+  // Uygulama açıkken bildirim gelirse göster
+  try {
+    const messaging = getMessaging();
+    onMessage(messaging, (payload) => {
+      const n = payload.notification || payload.data || {};
+      if (swReg) swReg.showNotification(n.title || "⚽ Tahmin zamanı!", {
+        body: n.body || "Yaklaşan maçlara tahmin yapmayı unutma.",
+        icon: "assets/icon-192.png"
+      });
+    });
+  } catch {}
+}
+
+async function registerFcmToken() {
+  try {
+    const messaging = getMessaging();
+    const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+    if (!token) return;
+    const id = token.replace(/[\/#?]/g, "_").slice(0, 300);
+    await setDoc(doc(db, "fcmTokens", id), {
+      uid, token, name: myName, updatedAt: serverTimestamp()
+    });
+  } catch (e) {
+    console.warn("Bildirim jetonu alınamadı:", e);
+  }
 }
 
 function setupSearch() {

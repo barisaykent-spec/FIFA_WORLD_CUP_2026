@@ -30,3 +30,8 @@ export const ADMIN_PIN = "baris1980";
 
 // Lig adı (ekranın üstünde görünür).
 export const LIG_ADI = "Aile Dünya Kupası Ligi";
+
+// Bildirimler için VAPID anahtarı (Web Push certificate).
+// Firebase Console > Project settings > Cloud Messaging >
+// "Web Push certificates" > Generate key pair ile alınır.
+export const VAPID_KEY = "BURAYA_VAPID_KEY";

@@ -1,0 +1,10 @@
+{
+  "name": "wc-notifier",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dünya Kupası tahmin ligi - maç hatırlatma bildirimleri göndericisi",
+  "main": "send-reminders.js",
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}
