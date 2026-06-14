@@ -34,4 +34,4 @@ export const LIG_ADI = "Aile Dünya Kupası Ligi";
 // Bildirimler için VAPID anahtarı (Web Push certificate).
 // Firebase Console > Project settings > Cloud Messaging >
 // "Web Push certificates" > Generate key pair ile alınır.
-export const VAPID_KEY = "vm7iV-BGPySOUwUbYhlsWLaOhNm-obCk9KEMB4WlBOg";
+export const VAPID_KEY = "BDsS_-hRu1k_sJ3U3TD2IzuXCuzOQ2RzmlxfHmkSU34vB7FRMKitzej0AgMf7x8xN9sGTywmkHADtjBOVrELgCs";
