@@ -1,8 +1,8 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=7";
-import { FIXTURES } from "./fixtures.js?v=7";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI } from "./firebase-config.js?v=8";
+import { FIXTURES } from "./fixtures.js?v=8";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -222,6 +222,63 @@ function myPred(matchId) {
   return predictions.find(p => p.matchId === matchId && p.uid === uid);
 }
 
+// Tek bir maç kartının HTML'ini üretir
+function matchCardHTML(m) {
+  const mp = myPred(m.id);
+  const locked = isLocked(m);
+  const live = locked && !m.finished;
+  const soon = isSoon(m.kickoff);
+
+  let scoreHtml;
+  if (m.finished && m.realHome != null) {
+    scoreHtml = `<div class="score-box">${m.realHome} <span class="sep">-</span> ${m.realAway}</div>`;
+  } else if (live) {
+    scoreHtml = `<div class="score-box pending live">CANLI</div>`;
+  } else {
+    scoreHtml = `<div class="score-box pending">VS</div>`;
+  }
+
+  const timeHtml = live
+    ? `<span class="match-time live-tag"><span class="live-dot"></span>CANLI</span>`
+    : m.finished
+      ? `<span class="match-time done-tag">Bitti</span>`
+      : `<span class="match-time">${fmtDate(m.kickoff)}</span>`;
+
+  // Alt bilgi: benim tahminim + sonuç rozeti
+  let foot = "";
+  if (mp) {
+    const sc = scorePred(mp, m);
+    let badge = "";
+    if (m.finished) {
+      if (sc.exact) badge = `<span class="badge exact">✓ Tam skor +${sc.pts}</span>`;
+      else if (sc.outcome) badge = `<span class="badge win">✓ Kazananı bildin +1</span>`;
+      else badge = `<span class="badge lose">✗ Tutmadı</span>`;
+    } else {
+      badge = `<span class="badge ${locked?"locked":"open"}">${locked?"Kilitli":"Tahmin yapıldı"}</span>`;
+    }
+    foot = `<span class="mypred">Tahminin: <b>${mp.home} - ${mp.away}</b></span>${badge}`;
+  } else {
+    const badge = locked
+      ? `<span class="badge locked">Kapandı</span>`
+      : `<span class="badge open">Tahmin yap →</span>`;
+    foot = `<span class="mypred">Henüz tahmin yok</span>${badge}`;
+  }
+
+  return `
+    <div class="match${soon ? " soon" : ""}" data-id="${m.id}">
+      <div class="match-top">
+        <span class="match-stage">${esc(m.stage||"")}${soon ? ` <span class="soon-tag">SON 24 SAAT</span>` : ""}</span>
+        ${timeHtml}
+      </div>
+      <div class="match-row">
+        ${teamCell(m.home, "home")}
+        ${scoreHtml}
+        ${teamCell(m.away, "away")}
+      </div>
+      <div class="match-foot">${foot}</div>
+    </div>`;
+}
+
 function renderMatches() {
   // Filtre butonları (aşamalara göre)
   const stages = [...new Set(matches.map(m => m.stage).filter(Boolean))];
@@ -252,66 +309,23 @@ function renderMatches() {
   }
   $("matchEmpty").classList.add("hidden");
 
+  // Son 24 saatte başlayacak maçlar en üste sabitlenir (çerçeveli kalır)
+  const soonList = list.filter(m => isSoon(m.kickoff));
+  const restList = list.filter(m => !isSoon(m.kickoff));
+
   let html = "";
+  if (soonList.length) {
+    html += `<div class="stage-head soon-head">⏰ SON 24 SAAT</div>`;
+    for (const m of soonList) html += matchCardHTML(m);
+  }
+
   let lastStage = null;
-  for (const m of list) {
+  for (const m of restList) {
     if (m.stage && m.stage !== lastStage && activeFilter === "all") {
       html += `<div class="stage-head">${esc(m.stage)}</div>`;
       lastStage = m.stage;
     }
-    const mp = myPred(m.id);
-    const locked = isLocked(m);
-    const live = locked && !m.finished;
-    const soon = isSoon(m.kickoff);
-
-    let scoreHtml;
-    if (m.finished && m.realHome != null) {
-      scoreHtml = `<div class="score-box">${m.realHome} <span class="sep">-</span> ${m.realAway}</div>`;
-    } else if (live) {
-      scoreHtml = `<div class="score-box pending live">CANLI</div>`;
-    } else {
-      scoreHtml = `<div class="score-box pending">VS</div>`;
-    }
-
-    const timeHtml = live
-      ? `<span class="match-time live-tag"><span class="live-dot"></span>CANLI</span>`
-      : m.finished
-        ? `<span class="match-time done-tag">Bitti</span>`
-        : `<span class="match-time">${fmtDate(m.kickoff)}</span>`;
-
-    // Alt bilgi: benim tahminim + sonuç rozeti
-    let foot = "";
-    if (mp) {
-      const sc = scorePred(mp, m);
-      let badge = "";
-      if (m.finished) {
-        if (sc.exact) badge = `<span class="badge exact">✓ Tam skor +${sc.pts}</span>`;
-        else if (sc.outcome) badge = `<span class="badge win">✓ Kazananı bildin +1</span>`;
-        else badge = `<span class="badge lose">✗ Tutmadı</span>`;
-      } else {
-        badge = `<span class="badge ${locked?"locked":"open"}">${locked?"Kilitli":"Tahmin yapıldı"}</span>`;
-      }
-      foot = `<span class="mypred">Tahminin: <b>${mp.home} - ${mp.away}</b></span>${badge}`;
-    } else {
-      const badge = locked
-        ? `<span class="badge locked">Kapandı</span>`
-        : `<span class="badge open">Tahmin yap →</span>`;
-      foot = `<span class="mypred">Henüz tahmin yok</span>${badge}`;
-    }
-
-    html += `
-      <div class="match${soon ? " soon" : ""}" data-id="${m.id}">
-        <div class="match-top">
-          <span class="match-stage">${esc(m.stage||"")}${soon ? ` <span class="soon-tag">SON 24 SAAT</span>` : ""}</span>
-          ${timeHtml}
-        </div>
-        <div class="match-row">
-          ${teamCell(m.home, "home")}
-          ${scoreHtml}
-          ${teamCell(m.away, "away")}
-        </div>
-        <div class="match-foot">${foot}</div>
-      </div>`;
+    html += matchCardHTML(m);
   }
   box.innerHTML = html;
   box.querySelectorAll(".match").forEach(el =>

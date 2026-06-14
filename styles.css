@@ -157,6 +157,8 @@ main { padding: 16px 14px 100px; max-width: 640px; margin: 0 auto; }
   letter-spacing: 1px; margin: 12px 4px 2px; display: flex; align-items: center; gap: 8px;
 }
 .stage-head::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.stage-head.soon-head { font-size: 13px; color: var(--accent); }
+.stage-head.soon-head::after { background: linear-gradient(90deg, var(--accent), transparent); opacity: .5; }
 
 .match {
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025));
