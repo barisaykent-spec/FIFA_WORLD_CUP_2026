@@ -96,5 +96,23 @@ export const FIXTURES = [
   { home: "Kolombiya",        away: "Portekiz",         stage: "K Grubu", kickoff: "2026-06-28T02:30" },
   { home: "Demokratik Kongo", away: "Özbekistan",       stage: "K Grubu", kickoff: "2026-06-28T02:30" },
   { home: "Cezayir",          away: "Avusturya",        stage: "J Grubu", kickoff: "2026-06-28T05:00" },
-  { home: "Ürdün",            away: "Arjantin",         stage: "J Grubu", kickoff: "2026-06-28T05:00" }
+  { home: "Ürdün",            away: "Arjantin",         stage: "J Grubu", kickoff: "2026-06-28T05:00" },
+
+  // --- SON 32 (Eleme turu — gerçek eşleşmeler, TSİ) ---
+  { home: "Güney Afrika",     away: "Kanada",           stage: "Son 32", kickoff: "2026-06-28T22:00" },
+  { home: "Almanya",          away: "Paraguay",         stage: "Son 32", kickoff: "2026-06-29T20:00" },
+  { home: "Brezilya",         away: "Japonya",          stage: "Son 32", kickoff: "2026-06-29T23:30" },
+  { home: "Hollanda",         away: "Fas",              stage: "Son 32", kickoff: "2026-06-30T04:00" },
+  { home: "Fildişi Sahili",   away: "Norveç",           stage: "Son 32", kickoff: "2026-06-30T20:00" },
+  { home: "Fransa",           away: "İsveç",            stage: "Son 32", kickoff: "2026-07-01T00:00" },
+  { home: "Meksika",          away: "Ekvador",          stage: "Son 32", kickoff: "2026-07-01T04:00" },
+  { home: "İngiltere",        away: "Demokratik Kongo", stage: "Son 32", kickoff: "2026-07-01T19:00" },
+  { home: "Belçika",          away: "Senegal",          stage: "Son 32", kickoff: "2026-07-01T23:00" },
+  { home: "ABD",              away: "Bosna Hersek",     stage: "Son 32", kickoff: "2026-07-02T03:00" },
+  { home: "İspanya",          away: "Avusturya",        stage: "Son 32", kickoff: "2026-07-02T22:00" },
+  { home: "Portekiz",         away: "Hırvatistan",      stage: "Son 32", kickoff: "2026-07-03T02:00" },
+  { home: "İsviçre",          away: "Cezayir",          stage: "Son 32", kickoff: "2026-07-03T06:00" },
+  { home: "Avustralya",       away: "Mısır",            stage: "Son 32", kickoff: "2026-07-03T21:00" },
+  { home: "Arjantin",         away: "Cabo Verde",       stage: "Son 32", kickoff: "2026-07-04T01:00" },
+  { home: "Kolombiya",        away: "Gana",             stage: "Son 32", kickoff: "2026-07-04T04:30" }
 ];
