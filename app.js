@@ -1,8 +1,8 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY } from "./firebase-config.js?v=13";
-import { FIXTURES } from "./fixtures.js?v=13";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY } from "./firebase-config.js?v=14";
+import { FIXTURES } from "./fixtures.js?v=14";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -299,6 +299,11 @@ function myPred(matchId) {
   return predictions.find(p => p.matchId === matchId && p.uid === uid);
 }
 
+// Grup maçlarının hepsini tek "Grup Aşaması" başlığı altında göster (veri değişmez)
+function displayStage(stage) {
+  return /grubu/i.test(stage || "") ? "Grup Aşaması" : (stage || "");
+}
+
 // Tek bir maç kartının HTML'ini üretir
 function matchCardHTML(m) {
   const mp = myPred(m.id);
@@ -344,7 +349,7 @@ function matchCardHTML(m) {
   return `
     <div class="match${soon ? " soon" : ""}" data-id="${m.id}">
       <div class="match-top">
-        <span class="match-stage">${esc(m.stage||"")}${soon ? ` <span class="soon-tag">SON 24 SAAT</span>` : ""}</span>
+        <span class="match-stage">${esc(displayStage(m.stage))}${soon ? ` <span class="soon-tag">SON 24 SAAT</span>` : ""}</span>
         ${timeHtml}
       </div>
       <div class="match-row">
@@ -358,7 +363,7 @@ function matchCardHTML(m) {
 
 function renderMatches() {
   // Filtre butonları (aşamalara göre)
-  const stages = [...new Set(matches.map(m => m.stage).filter(Boolean))];
+  const stages = [...new Set(matches.map(m => displayStage(m.stage)).filter(Boolean))];
   const filterBox = $("matchFilters");
   const filters = [["all","Tümü"], ...stages.map(s => [s, s])];
   filterBox.innerHTML = filters.map(([k,label]) =>
@@ -366,7 +371,7 @@ function renderMatches() {
   filterBox.querySelectorAll("button").forEach(b =>
     b.addEventListener("click", () => { activeFilter = b.dataset.f; renderMatches(); }));
 
-  let list = activeFilter === "all" ? matches : matches.filter(m => m.stage === activeFilter);
+  let list = activeFilter === "all" ? matches : matches.filter(m => displayStage(m.stage) === activeFilter);
 
   // Takım ismine göre arama (Türkçe büyük/küçük harf duyarsız)
   const q = searchText.trim().toLocaleLowerCase("tr");
@@ -398,9 +403,10 @@ function renderMatches() {
 
   let lastStage = null;
   for (const m of restList) {
-    if (m.stage && m.stage !== lastStage && activeFilter === "all") {
-      html += `<div class="stage-head">${esc(m.stage)}</div>`;
-      lastStage = m.stage;
+    const ds = displayStage(m.stage);
+    if (ds && ds !== lastStage && activeFilter === "all") {
+      html += `<div class="stage-head">${esc(ds)}</div>`;
+      lastStage = ds;
     }
     html += matchCardHTML(m);
   }
