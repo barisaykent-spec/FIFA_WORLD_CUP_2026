@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="stylesheet" href="styles.css?v=14" />
+  <link rel="stylesheet" href="styles.css?v=15" />
 </head>
 <body>
   <!-- İsim girme ekranı -->
@@ -65,6 +65,7 @@
         <div class="legend">
           <span><b>+1</b> kazananı bilmek</span>
           <span><b>+1</b> kesin skoru bilmek</span>
+          <span><b>+1</b> penaltıyı bilmek</span>
         </div>
         <div id="leaderboard" class="leaderboard"></div>
         <div id="leagueEmpty" class="empty hidden">Henüz puan yok.</div>
@@ -145,6 +146,10 @@
         </div>
       </div>
       <div id="predKickoff" class="pred-kickoff"></div>
+      <label id="predPenaltyRow" class="pen-row hidden">
+        <input type="checkbox" id="predPenalty" />
+        <span>🥅 Bu maç penaltılara gider <small>(+1 puan)</small></span>
+      </label>
       <button id="predSaveBtn" class="btn-primary">Tahmini Kaydet</button>
       <div id="predMsg" class="ok-msg"></div>
 
@@ -152,6 +157,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=14"></script>
+  <script type="module" src="app.js?v=15"></script>
 </body>
 </html>

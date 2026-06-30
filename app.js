@@ -1,8 +1,8 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY } from "./firebase-config.js?v=14";
-import { FIXTURES } from "./fixtures.js?v=14";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY } from "./firebase-config.js?v=15";
+import { FIXTURES } from "./fixtures.js?v=15";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -95,14 +95,18 @@ const flagOf = (name) => FLAGS[String(name||"").trim().toLowerCase()] || "🏳�
 const teamCell = (name, side) =>
   `<div class="team ${side}"><span class="flag">${flagOf(name)}</span><span class="tname">${esc(name)}</span></div>`;
 
-// Bir tahmin için puan: kazananı bildiyse +1, kesin skoru da bildiyse +1
+// Bir tahmin için puan: kazananı +1, kesin skor +1, penaltıya gideceğini bildiyse +1
 function scorePred(p, m) {
-  if (!m.finished || m.realHome == null || m.realAway == null) return { pts:0, outcome:false, exact:false };
-  if (p == null || p.home == null || p.away == null) return { pts:0, outcome:false, exact:false };
+  if (!m.finished || m.realHome == null || m.realAway == null) return { pts:0, outcome:false, exact:false, penaltyHit:false };
+  if (p == null || p.home == null || p.away == null) return { pts:0, outcome:false, exact:false, penaltyHit:false };
   const outcome = sign(p.home, p.away) === sign(m.realHome, m.realAway);
   const exact = p.home === m.realHome && p.away === m.realAway;
-  return { pts: (outcome ? 1 : 0) + (exact ? 1 : 0), outcome, exact };
+  const penaltyHit = !!p.penalty && !!m.penalty;
+  return { pts: (outcome ? 1 : 0) + (exact ? 1 : 0) + (penaltyHit ? 1 : 0), outcome, exact, penaltyHit };
 }
+
+// Maç eleme turu mu? (grup maçları penaltıya gitmez)
+const isKnockout = (m) => !!m && !/grubu/i.test(m.stage || "");
 
 // ============================================================
 //  Başlangıç
@@ -332,9 +336,15 @@ function matchCardHTML(m) {
     const sc = scorePred(mp, m);
     let badge = "";
     if (m.finished) {
-      if (sc.exact) badge = `<span class="badge exact">✓ Tam skor +${sc.pts}</span>`;
-      else if (sc.outcome) badge = `<span class="badge win">✓ Kazananı bildin +1</span>`;
-      else badge = `<span class="badge lose">✗ Tutmadı</span>`;
+      if (sc.pts > 0) {
+        const parts = [];
+        if (sc.exact) parts.push("Tam skor");
+        else if (sc.outcome) parts.push("Kazananı bildin");
+        if (sc.penaltyHit) parts.push("Penaltı");
+        badge = `<span class="badge ${sc.exact ? "exact" : "win"}">✓ ${parts.join(" + ")} +${sc.pts}</span>`;
+      } else {
+        badge = `<span class="badge lose">✗ Tutmadı</span>`;
+      }
     } else {
       badge = `<span class="badge ${locked?"locked":"open"}">${locked?"Kilitli":"Tahmin yapıldı"}</span>`;
     }
@@ -504,8 +514,20 @@ function refreshModal() {
   $("predHomeScore").disabled = locked;
   $("predAwayScore").disabled = locked;
 
+  // Penaltı tahmini (sadece eleme turu maçlarında)
+  const penRow = $("predPenaltyRow");
+  const penBox = $("predPenalty");
+  if (isKnockout(m)) {
+    penRow.classList.remove("hidden");
+    penBox.checked = !!(mp && mp.penalty);
+    penBox.disabled = locked;
+  } else {
+    penRow.classList.add("hidden");
+    penBox.checked = false;
+  }
+
   if (m.finished && m.realHome != null) {
-    $("predKickoff").innerHTML = `Gerçek skor: <b>${m.realHome} - ${m.realAway}</b>`;
+    $("predKickoff").innerHTML = `Gerçek skor: <b>${m.realHome} - ${m.realAway}</b>` + (m.penalty ? ` 🥅 <b>(Penaltılar)</b>` : "");
   } else if (locked) {
     $("predKickoff").textContent = "Maç başladı, tahminler kilitlendi.";
   } else {
@@ -523,9 +545,10 @@ function refreshModal() {
       others.innerHTML = `<h4>Herkesin tahmini</h4>` + preds.map(p => {
         const sc = scorePred(p, m);
         let tag = "";
-        if (m.finished) tag = sc.exact ? " 🎯" : sc.outcome ? " ✓" : " ✗";
+        if (m.finished) tag = sc.pts > 0 ? (sc.exact ? " 🎯" : " ✓") : " ✗";
+        const pen = p.penalty ? " 🥅" : "";
         return `<div class="po-row"><span class="po-name">${esc(p.name)}${p.uid===uid?" (sen)":""}</span>
-          <span class="po-score">${p.home} - ${p.away}${tag}</span></div>`;
+          <span class="po-score">${p.home} - ${p.away}${pen}${tag}</span></div>`;
       }).join("");
     } else {
       others.innerHTML = `<h4>Herkesin tahmini</h4><div class="po-row"><span class="po-name muted">Kimse tahmin yapmamış.</span></div>`;
@@ -545,8 +568,9 @@ async function savePrediction() {
     $("predMsg").textContent = "Lütfen iki takım için de skor gir.";
     return;
   }
+  const penalty = isKnockout(m) && $("predPenalty").checked;
   await setDoc(doc(db, "predictions", `${m.id}_${uid}`), {
-    matchId: m.id, uid, name: myName, home: h, away: a, ts: serverTimestamp()
+    matchId: m.id, uid, name: myName, home: h, away: a, penalty, ts: serverTimestamp()
   });
   $("predMsg").style.color = "var(--green)";
   $("predMsg").textContent = "Tahminin kaydedildi! ✓";
@@ -645,6 +669,7 @@ function renderAdminMatches() {
         <input type="number" min="0" class="aa" value="${m.realAway ?? ""}" placeholder="0" />
         <button class="amatch-save">Kaydet</button>
       </div>
+      ${isKnockout(m) ? `<label class="amatch-pen"><input type="checkbox" class="apen" ${m.penalty ? "checked" : ""}/> 🥅 Maç penaltılara gitti</label>` : ""}
       <button class="amatch-del">Maçı sil</button>
     </div>`).join("");
 
@@ -654,7 +679,9 @@ function renderAdminMatches() {
       const h = parseInt(el.querySelector(".ah").value, 10);
       const a = parseInt(el.querySelector(".aa").value, 10);
       if (isNaN(h) || isNaN(a)) { adminMsg("İki skoru da gir.", true); return; }
-      await setDoc(doc(db, "matches", id), { realHome:h, realAway:a, finished:true }, { merge:true });
+      const penBox = el.querySelector(".apen");
+      const penalty = penBox ? penBox.checked : false;
+      await setDoc(doc(db, "matches", id), { realHome:h, realAway:a, finished:true, penalty }, { merge:true });
       adminMsg("Skor kaydedildi, tahminler değerlendirildi ✓", false);
     });
     el.querySelector(".amatch-del").addEventListener("click", async () => {

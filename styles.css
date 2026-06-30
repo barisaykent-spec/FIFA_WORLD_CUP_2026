@@ -334,6 +334,18 @@ main { padding: 16px 14px 100px; max-width: 640px; margin: 0 auto; }
 .pred-team input:focus { outline: none; border-color: var(--accent); }
 .pred-vs { font-size: 18px; color: var(--muted); font-weight: 900; padding-top: 88px; }
 .pred-kickoff { text-align: center; color: var(--muted); font-size: 12px; margin: 16px 0 18px; }
+.pen-row {
+  display: flex; align-items: center; gap: 10px; justify-content: center;
+  background: rgba(255,255,255,.05); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 14px; margin: 0 0 14px; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.pen-row input { width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; }
+.pen-row small { color: var(--muted); font-weight: 600; }
+.amatch-pen {
+  display: flex; align-items: center; gap: 8px; margin-top: 10px;
+  font-size: 13px; font-weight: 700; color: var(--text); cursor: pointer;
+}
+.amatch-pen input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
 .pred-kickoff b { color: var(--text); }
 .pred-others { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
 .pred-others h4 { margin: 0 0 12px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
