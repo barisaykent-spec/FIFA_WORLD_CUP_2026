@@ -124,5 +124,11 @@ export const FIXTURES = [
   { home: "Portekiz",         away: "İspanya",          stage: "Son 16", kickoff: "2026-07-06T22:00" },
   { home: "ABD",              away: "Belçika",          stage: "Son 16", kickoff: "2026-07-07T03:00" },
   { home: "Arjantin",         away: "Mısır",            stage: "Son 16", kickoff: "2026-07-07T19:00" },
-  { home: "İsviçre",          away: "Kolombiya",        stage: "Son 16", kickoff: "2026-07-07T23:00" }
+  { home: "İsviçre",          away: "Kolombiya",        stage: "Son 16", kickoff: "2026-07-07T23:00" },
+
+  // --- ÇEYREK FİNAL (gerçek eşleşmeler, TSİ) ---
+  { home: "Fransa",           away: "Fas",              stage: "Çeyrek Final", kickoff: "2026-07-09T23:00" },
+  { home: "İspanya",          away: "Belçika",          stage: "Çeyrek Final", kickoff: "2026-07-10T22:00" },
+  { home: "Norveç",           away: "İngiltere",        stage: "Çeyrek Final", kickoff: "2026-07-12T00:00" },
+  { home: "Arjantin",         away: "İsviçre",          stage: "Çeyrek Final", kickoff: "2026-07-12T04:00" }
 ];
