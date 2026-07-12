@@ -130,5 +130,9 @@ export const FIXTURES = [
   { home: "Fransa",           away: "Fas",              stage: "Çeyrek Final", kickoff: "2026-07-09T23:00" },
   { home: "İspanya",          away: "Belçika",          stage: "Çeyrek Final", kickoff: "2026-07-10T22:00" },
   { home: "Norveç",           away: "İngiltere",        stage: "Çeyrek Final", kickoff: "2026-07-12T00:00" },
-  { home: "Arjantin",         away: "İsviçre",          stage: "Çeyrek Final", kickoff: "2026-07-12T04:00" }
+  { home: "Arjantin",         away: "İsviçre",          stage: "Çeyrek Final", kickoff: "2026-07-12T04:00" },
+
+  // --- YARI FİNAL (gerçek eşleşmeler, TSİ) ---
+  { home: "Fransa",           away: "İspanya",          stage: "Yarı Final", kickoff: "2026-07-14T22:00" },
+  { home: "İngiltere",        away: "Arjantin",         stage: "Yarı Final", kickoff: "2026-07-15T22:00" }
 ];
