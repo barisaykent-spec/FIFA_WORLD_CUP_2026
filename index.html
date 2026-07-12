@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="stylesheet" href="styles.css?v=18" />
+  <link rel="stylesheet" href="styles.css?v=19" />
 </head>
 <body>
   <!-- İsim girme ekranı -->
@@ -41,6 +41,9 @@
         <span id="meName" class="me-name"></span>
       </div>
     </header>
+
+    <!-- Turnuva geçişi: Dünya Kupası / Süper Lig -->
+    <div id="tourSwitch" class="tour-switch"></div>
 
     <main>
       <!-- MAÇLAR -->
@@ -85,12 +88,16 @@
         <div id="adminPanel" class="hidden">
           <div class="admin-box">
             <h3>Yeni Maç Ekle</h3>
+            <select id="newTour" class="admin-select">
+              <option value="wc">🏆 Dünya Kupası</option>
+              <option value="sl">⚽ Süper Lig</option>
+            </select>
             <div class="form-row">
-              <input id="newHome" placeholder="Ev sahibi (örn. Türkiye)" />
-              <input id="newAway" placeholder="Deplasman (örn. Brezilya)" />
+              <input id="newHome" placeholder="Ev sahibi (örn. Galatasaray)" />
+              <input id="newAway" placeholder="Deplasman (örn. Fenerbahçe)" />
             </div>
             <div class="form-row">
-              <input id="newStage" placeholder="Aşama (örn. A Grubu)" />
+              <input id="newStage" placeholder="Aşama/Hafta (örn. 1. Hafta)" />
               <input id="newKickoff" type="datetime-local" />
             </div>
             <button id="addMatchBtn" class="btn-primary">Maçı Ekle</button>
@@ -157,6 +164,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=18"></script>
+  <script type="module" src="app.js?v=19"></script>
 </body>
 </html>

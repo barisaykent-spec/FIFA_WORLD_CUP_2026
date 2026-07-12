@@ -1,8 +1,8 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY } from "./firebase-config.js?v=18";
-import { FIXTURES } from "./fixtures.js?v=18";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY } from "./firebase-config.js?v=19";
+import { FIXTURES } from "./fixtures.js?v=19";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -37,6 +37,15 @@ let users = [];            // {id(uid), name}
 let activeFilter = "all";
 let searchText = "";
 let currentMatchId = null;
+
+// Turnuvalar: Dünya Kupası ve Süper Lig ayrı izlenir
+const TOURNAMENTS = [
+  { id: "wc", name: "Dünya Kupası", icon: "🏆" },
+  { id: "sl", name: "Süper Lig", icon: "⚽" }
+];
+let activeTour = localStorage.getItem("wc_tour") || "wc";
+// Bir maçın turnuvası (eski kayıtlarda alan yoksa Dünya Kupası sayılır)
+const tourOf = (m) => (m && m.tournament) || "wc";
 
 // ---------- Kısa yardımcılar ----------
 const $ = (id) => document.getElementById(id);
@@ -183,11 +192,32 @@ function startApp() {
   });
 
   setupTabs();
+  setupTourSwitch();
   setupSearch();
   setupAdmin();
   setupModal();
   setupNotifications();
   if (isAdmin) showAdminPanel();
+}
+
+// Turnuva geçiş anahtarı (Dünya Kupası / Süper Lig)
+function setupTourSwitch() {
+  const box = $("tourSwitch");
+  if (!box) return;
+  box.innerHTML = TOURNAMENTS.map(t =>
+    `<button class="tour-btn ${activeTour === t.id ? "active" : ""}" data-tour="${t.id}">${t.icon} ${esc(t.name)}</button>`
+  ).join("");
+  box.querySelectorAll(".tour-btn").forEach(b => {
+    b.addEventListener("click", () => {
+      if (activeTour === b.dataset.tour) return;
+      activeTour = b.dataset.tour;
+      localStorage.setItem("wc_tour", activeTour);
+      activeFilter = "all";
+      box.querySelectorAll(".tour-btn").forEach(x => x.classList.toggle("active", x.dataset.tour === activeTour));
+      if ($("newTour")) $("newTour").value = activeTour;
+      renderMatches(); renderLeaderboard(); renderAdminMatches();
+    });
+  });
 }
 
 // ============================================================
@@ -372,8 +402,11 @@ function matchCardHTML(m) {
 }
 
 function renderMatches() {
+  // Sadece aktif turnuvanın maçları
+  const tourMatches = matches.filter(m => tourOf(m) === activeTour);
+
   // Filtre butonları (aşamalara göre)
-  const stages = [...new Set(matches.map(m => displayStage(m.stage)).filter(Boolean))];
+  const stages = [...new Set(tourMatches.map(m => displayStage(m.stage)).filter(Boolean))];
   const filterBox = $("matchFilters");
   const filters = [["all","Tümü"], ...stages.map(s => [s, s])];
   filterBox.innerHTML = filters.map(([k,label]) =>
@@ -381,7 +414,7 @@ function renderMatches() {
   filterBox.querySelectorAll("button").forEach(b =>
     b.addEventListener("click", () => { activeFilter = b.dataset.f; renderMatches(); }));
 
-  let list = activeFilter === "all" ? matches : matches.filter(m => displayStage(m.stage) === activeFilter);
+  let list = activeFilter === "all" ? tourMatches : tourMatches.filter(m => displayStage(m.stage) === activeFilter);
 
   // Takım ismine göre arama (Türkçe büyük/küçük harf duyarsız)
   const q = searchText.trim().toLocaleLowerCase("tr");
@@ -395,7 +428,7 @@ function renderMatches() {
       $("matchEmpty").classList.add("hidden");
     } else {
       box.innerHTML = "";
-      $("matchEmpty").classList.toggle("hidden", matches.length > 0);
+      $("matchEmpty").classList.toggle("hidden", tourMatches.length > 0);
     }
     return;
   }
@@ -437,6 +470,7 @@ function renderLeaderboard() {
   for (const p of predictions) {
     const m = matches.find(x => x.id === p.matchId);
     if (!m) continue;
+    if (tourOf(m) !== activeTour) continue;   // sadece aktif turnuva
     if (!table[p.uid]) table[p.uid] = { name:p.name || "?", pts:0, exact:0, outcome:0, played:0 };
     if (m.finished) {
       const sc = scorePred(p, m);
@@ -602,6 +636,7 @@ function setupAdmin() {
 function showAdminPanel() {
   $("adminLogin").classList.add("hidden");
   $("adminPanel").classList.remove("hidden");
+  if ($("newTour")) $("newTour").value = activeTour;
   renderAdminMatches();
   renderAdminUsers();
 }
@@ -611,13 +646,15 @@ async function addMatch() {
   const away = $("newAway").value.trim();
   const stage = $("newStage").value.trim();
   const kickoff = $("newKickoff").value;
+  const tournament = $("newTour") ? $("newTour").value : activeTour;
   if (!home || !away) { adminMsg("Ev sahibi ve deplasman gerekli.", true); return; }
   const id = "m_" + Date.now() + "_" + Math.random().toString(36).slice(2,7);
   await setDoc(doc(db, "matches", id), {
-    home, away, stage, kickoff, finished:false, realHome:null, realAway:null
+    home, away, stage, kickoff, tournament, finished:false, realHome:null, realAway:null
   });
   $("newHome").value = ""; $("newAway").value = ""; $("newStage").value = ""; $("newKickoff").value = "";
-  adminMsg("Maç eklendi ✓", false);
+  const tName = (TOURNAMENTS.find(t => t.id === tournament) || {}).name || "";
+  adminMsg(`Maç eklendi (${tName}) ✓`, false);
 }
 
 async function loadFixtures() {
@@ -625,11 +662,11 @@ async function loadFixtures() {
   const fxId = (f) => ("fx_" + f.stage + "_" + f.home + "_" + f.away).replace(/[^a-zA-Z0-9_]/g, "-");
   const wanted = new Map(FIXTURES.map(f => [fxId(f), f]));
 
-  // Artık listede olmayan eski fikstür maçlarını (ör. yanlış saatli kopyalar) temizle
+  // Artık listede olmayan eski Dünya Kupası fikstür maçlarını temizle (Süper Lig'e dokunma)
   let removed = 0;
   const snap = await getDocs(collection(db, "matches"));
   for (const d of snap.docs) {
-    if (d.id.startsWith("fx") && !wanted.has(d.id)) {
+    if (d.id.startsWith("fx") && !wanted.has(d.id) && tourOf(d.data()) === "wc") {
       const preds = predictions.filter(p => p.matchId === d.id);
       for (const p of preds) await deleteDoc(doc(db, "predictions", p.id));
       await deleteDoc(doc(db, "matches", d.id));
@@ -637,10 +674,10 @@ async function loadFixtures() {
     }
   }
 
-  // Maçları ekle / güncelle — girilen gerçek skorlara dokunmaz (merge)
+  // Maçları ekle / güncelle — girilen gerçek skorlara dokunmaz (merge). Bu fikstür Dünya Kupası'dır.
   for (const [id, f] of wanted) {
     await setDoc(doc(db, "matches", id),
-      { home: f.home, away: f.away, stage: f.stage || "", kickoff: f.kickoff || "" },
+      { home: f.home, away: f.away, stage: f.stage || "", kickoff: f.kickoff || "", tournament: "wc" },
       { merge: true });
   }
   adminMsg(`${wanted.size} maç güncellendi${removed ? `, ${removed} eski temizlendi` : ""} ✓`, false);
@@ -657,9 +694,10 @@ function renderAdminMatches() {
   if (!isAdmin) return;
   const box = $("adminMatchList");
   if (!box) return;
-  if (!matches.length) { box.innerHTML = `<p class="muted">Henüz maç yok.</p>`; return; }
+  const tourMatches = matches.filter(m => tourOf(m) === activeTour);
+  if (!tourMatches.length) { box.innerHTML = `<p class="muted">Bu turnuvada henüz maç yok. Yukarıdan ekleyebilirsin.</p>`; return; }
 
-  box.innerHTML = matches.map(m => `
+  box.innerHTML = tourMatches.map(m => `
     <div class="amatch" data-id="${m.id}">
       <div class="amatch-top">${esc(m.home)} - ${esc(m.away)}</div>
       <div class="amatch-sub">${esc(m.stage||"")} • ${fmtDate(m.kickoff)} ${m.finished?"• ✅ bitti":""}</div>
