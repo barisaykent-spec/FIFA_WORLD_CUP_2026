@@ -39,4 +39,4 @@ export const VAPID_KEY = "BDsS_-hRu1k_sJ3U3TD2IzuXCuzOQ2RzmlxfHmkSU34vB7FRMKitze
 // Yapay zeka maç analizi için Cloudflare Worker adresi.
 // Kurulum adımları için ai-worker/analyze.js dosyasının başına bak.
 // Boş bırakılırsa (BURAYA... ile başlıyorsa) info düğmesi hiç görünmez.
-export const AI_WORKER_URL = "BURAYA_CLOUDFLARE_WORKER_ADRESI";
+export const AI_WORKER_URL = "https://wc-ai-analiz.barisaykent.workers.dev";

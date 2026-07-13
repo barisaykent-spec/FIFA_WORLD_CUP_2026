@@ -76,7 +76,8 @@ export default {
             { role: "user", content: prompt }
           ],
           temperature: 0.8,
-          max_tokens: 250
+          max_tokens: 450,
+          reasoning_effort: "low"
         })
       });
     } catch (e) {
