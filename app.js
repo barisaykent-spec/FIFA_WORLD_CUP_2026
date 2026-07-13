@@ -1,9 +1,9 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY } from "./firebase-config.js?v=20";
-import { FIXTURES } from "./fixtures.js?v=20";
-import { SUPER_LIG_FIXTURES } from "./fixtures-superlig.js?v=20";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY } from "./firebase-config.js?v=21";
+import { FIXTURES } from "./fixtures.js?v=21";
+import { SUPER_LIG_FIXTURES } from "./fixtures-superlig.js?v=21";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -116,7 +116,8 @@ function scorePred(p, m) {
 }
 
 // Maç eleme turu mu? (grup maçları penaltıya gitmez)
-const isKnockout = (m) => !!m && !/grubu/i.test(m.stage || "");
+// Penaltı seçeneği sadece Dünya Kupası'nın eleme turlarında (grup değil)
+const isKnockout = (m) => !!m && tourOf(m) === "wc" && !/grubu/i.test(m.stage || "");
 
 // ============================================================
 //  Başlangıç
