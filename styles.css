@@ -198,11 +198,20 @@ main { padding: 16px 14px 100px; max-width: 640px; margin: 0 auto; }
 .stage-head.soon-head::after { background: linear-gradient(90deg, #39ff14, transparent); opacity: .6; }
 
 .match {
+  position: relative;
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025));
   border-radius: var(--radius); padding: 16px;
   cursor: pointer; border: 1px solid var(--line);
   transition: border-color .15s ease, transform .07s ease, box-shadow .2s ease;
 }
+.ai-info-btn {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line);
+  background: rgba(0,0,0,.35); color: var(--text); font-size: 13px; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0; backdrop-filter: blur(4px);
+}
+.ai-info-btn:hover { border-color: var(--blue); background: rgba(77,141,255,.18); }
 .match:hover { border-color: rgba(200,255,0,.4); box-shadow: 0 12px 30px rgba(0,0,0,.35); transform: translateY(-1px); }
 .match:active { transform: scale(.995); }
 /* Son 24 saat içindeki maçlar: kalın, fosforlu neon yeşil çerçeve */
@@ -223,7 +232,7 @@ main { padding: 16px 14px 100px; max-width: 640px; margin: 0 auto; }
   padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-left: 4px;
   box-shadow: 0 0 10px rgba(57,255,20,.7);
 }
-.match-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.match-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-right: 30px; }
 .match-stage { font-size: 11px; color: var(--muted); font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
 .match-time { font-size: 11px; color: var(--muted); font-weight: 600; }
 .done-tag { color: var(--muted); }
@@ -380,3 +389,11 @@ main { padding: 16px 14px 100px; max-width: 640px; margin: 0 auto; }
 .po-row .po-score { color: var(--muted); font-weight: 700; }
 
 .empty { text-align: center; color: var(--muted); padding: 50px 20px; font-size: 14px; line-height: 1.6; }
+
+/* ---------- Yapay zeka analizi ---------- */
+.ai-title { text-align: center; font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+.ai-teams { text-align: center; color: var(--accent); font-size: 13px; font-weight: 700; margin-bottom: 18px; }
+.ai-loading { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 30px 10px; }
+.ai-loading p { color: var(--muted); font-size: 13px; }
+.ai-comment { font-size: 15px; line-height: 1.7; color: var(--text); padding: 4px 2px 8px; white-space: pre-wrap; }
+.ai-error { text-align: center; color: var(--red); font-size: 14px; padding: 20px 10px; }

@@ -35,3 +35,8 @@ export const LIG_ADI = "Aile Dünya Kupası Ligi";
 // Firebase Console > Project settings > Cloud Messaging >
 // "Web Push certificates" > Generate key pair ile alınır.
 export const VAPID_KEY = "BDsS_-hRu1k_sJ3U3TD2IzuXCuzOQ2RzmlxfHmkSU34vB7FRMKitzej0AgMf7x8xN9sGTywmkHADtjBOVrELgCs";
+
+// Yapay zeka maç analizi için Cloudflare Worker adresi.
+// Kurulum adımları için ai-worker/analyze.js dosyasının başına bak.
+// Boş bırakılırsa (BURAYA... ile başlıyorsa) info düğmesi hiç görünmez.
+export const AI_WORKER_URL = "BURAYA_CLOUDFLARE_WORKER_ADRESI";

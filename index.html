@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="assets/icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="stylesheet" href="styles.css?v=21" />
+  <link rel="stylesheet" href="styles.css?v=22" />
 </head>
 <body>
   <!-- İsim girme ekranı -->
@@ -165,6 +165,16 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=21"></script>
+  <!-- Yapay zeka maç analizi -->
+  <div id="aiModal" class="modal hidden">
+    <div class="modal-card">
+      <button class="modal-close" id="aiClose">✕</button>
+      <div class="ai-title">🤖 Yapay Zeka Analizi</div>
+      <div id="aiTeams" class="ai-teams"></div>
+      <div id="aiBody"></div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js?v=22"></script>
 </body>
 </html>

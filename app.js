@@ -1,9 +1,9 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY } from "./firebase-config.js?v=21";
-import { FIXTURES } from "./fixtures.js?v=21";
-import { SUPER_LIG_FIXTURES } from "./fixtures-superlig.js?v=21";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY, AI_WORKER_URL } from "./firebase-config.js?v=22";
+import { FIXTURES } from "./fixtures.js?v=22";
+import { SUPER_LIG_FIXTURES } from "./fixtures-superlig.js?v=22";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -47,6 +47,9 @@ const TOURNAMENTS = [
 let activeTour = localStorage.getItem("wc_tour") || "wc";
 // Bir maçın turnuvası (eski kayıtlarda alan yoksa Dünya Kupası sayılır)
 const tourOf = (m) => (m && m.tournament) || "wc";
+
+// Yapay zeka analizi yapılandırılmış mı? (Cloudflare Worker adresi girilmişse)
+const AI_ENABLED = !!AI_WORKER_URL && !AI_WORKER_URL.startsWith("BURAYA");
 
 // ---------- Kısa yardımcılar ----------
 const $ = (id) => document.getElementById(id);
@@ -198,6 +201,7 @@ function startApp() {
   setupSearch();
   setupAdmin();
   setupModal();
+  setupAiModal();
   setupNotifications();
   if (isAdmin) showAdminPanel();
 }
@@ -388,8 +392,13 @@ function matchCardHTML(m) {
     foot = `<span class="mypred">Henüz tahmin yok</span>${badge}`;
   }
 
+  const infoBtn = AI_ENABLED
+    ? `<button class="ai-info-btn" data-aid="${m.id}" title="Yapay zeka analizi" aria-label="Takım analizi">ℹ️</button>`
+    : "";
+
   return `
     <div class="match${soon ? " soon" : ""}" data-id="${m.id}">
+      ${infoBtn}
       <div class="match-top">
         <span class="match-stage">${esc(displayStage(m.stage))}${soon ? ` <span class="soon-tag">SON 24 SAAT</span>` : ""}</span>
         ${timeHtml}
@@ -458,6 +467,8 @@ function renderMatches() {
   box.innerHTML = html;
   box.querySelectorAll(".match").forEach(el =>
     el.addEventListener("click", () => openPredict(el.dataset.id)));
+  box.querySelectorAll(".ai-info-btn").forEach(el =>
+    el.addEventListener("click", (e) => { e.stopPropagation(); openAiInfo(el.dataset.aid); }));
 }
 
 // ============================================================
@@ -534,6 +545,51 @@ function openPredict(matchId) {
 function closePredict() {
   currentMatchId = null;
   $("predictModal").classList.add("hidden");
+}
+
+// ============================================================
+//  Yapay Zeka Maç Analizi
+// ============================================================
+function setupAiModal() {
+  if (!AI_ENABLED) return;
+  $("aiClose").addEventListener("click", closeAiInfo);
+  $("aiModal").addEventListener("click", e => { if (e.target.id === "aiModal") closeAiInfo(); });
+}
+
+function closeAiInfo() {
+  $("aiModal").classList.add("hidden");
+}
+
+async function openAiInfo(matchId) {
+  const m = matches.find(x => x.id === matchId);
+  if (!m) return;
+
+  $("aiModal").classList.remove("hidden");
+  $("aiTeams").textContent = `${m.home} — ${m.away}`;
+  $("aiTeams").dataset.mid = matchId;
+  $("aiBody").innerHTML = `<div class="ai-loading"><div class="spinner"></div><p>Analiz hazırlanıyor…</p></div>`;
+
+  if (m.aiComment) { $("aiBody").innerHTML = `<p class="ai-comment">${esc(m.aiComment)}</p>`; return; }
+
+  try {
+    const res = await fetch(AI_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ home: m.home, away: m.away, stage: displayStage(m.stage) })
+    });
+    if (!res.ok) throw new Error("İstek başarısız");
+    const data = await res.json();
+    if (!data.comment) throw new Error("Boş cevap");
+
+    await setDoc(doc(db, "matches", m.id), { aiComment: data.comment }, { merge: true });
+    if (currentAiMatchId() === matchId) $("aiBody").innerHTML = `<p class="ai-comment">${esc(data.comment)}</p>`;
+  } catch (e) {
+    $("aiBody").innerHTML = `<p class="ai-error">Analiz alınamadı, birazdan tekrar dene. 😕</p>`;
+  }
+}
+
+function currentAiMatchId() {
+  return $("aiModal").classList.contains("hidden") ? null : $("aiTeams").dataset.mid;
 }
 
 function refreshModal() {
