@@ -1,8 +1,9 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY } from "./firebase-config.js?v=19";
-import { FIXTURES } from "./fixtures.js?v=19";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY } from "./firebase-config.js?v=20";
+import { FIXTURES } from "./fixtures.js?v=20";
+import { SUPER_LIG_FIXTURES } from "./fixtures-superlig.js?v=20";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -631,6 +632,7 @@ function setupAdmin() {
   });
   $("addMatchBtn").addEventListener("click", addMatch);
   $("loadFixturesBtn").addEventListener("click", loadFixtures);
+  $("loadFixturesSLBtn").addEventListener("click", loadFixturesSL);
 }
 
 function showAdminPanel() {
@@ -681,6 +683,32 @@ async function loadFixtures() {
       { merge: true });
   }
   adminMsg(`${wanted.size} maç güncellendi${removed ? `, ${removed} eski temizlendi` : ""} ✓`, false);
+}
+
+async function loadFixturesSL() {
+  if (!SUPER_LIG_FIXTURES.length) { adminMsg("fixtures-superlig.js boş.", true); return; }
+  const fxId = (f) => ("fxsl_" + f.stage + "_" + f.home + "_" + f.away).replace(/[^a-zA-Z0-9_]/g, "-");
+  const wanted = new Map(SUPER_LIG_FIXTURES.map(f => [fxId(f), f]));
+
+  // Artık listede olmayan eski Süper Lig fikstür maçlarını temizle (Dünya Kupası'na dokunma)
+  let removed = 0;
+  const snap = await getDocs(collection(db, "matches"));
+  for (const d of snap.docs) {
+    if (d.id.startsWith("fxsl_") && !wanted.has(d.id) && tourOf(d.data()) === "sl") {
+      const preds = predictions.filter(p => p.matchId === d.id);
+      for (const p of preds) await deleteDoc(doc(db, "predictions", p.id));
+      await deleteDoc(doc(db, "matches", d.id));
+      removed++;
+    }
+  }
+
+  // Maçları ekle / güncelle — girilen gerçek skorlara dokunmaz (merge). Bu fikstür Süper Lig'dir.
+  for (const [id, f] of wanted) {
+    await setDoc(doc(db, "matches", id),
+      { home: f.home, away: f.away, stage: f.stage || "", kickoff: f.kickoff || "", tournament: "sl" },
+      { merge: true });
+  }
+  adminMsg(`${wanted.size} Süper Lig maçı güncellendi${removed ? `, ${removed} eski temizlendi` : ""} ✓`, false);
 }
 
 function adminMsg(text, isError) {
