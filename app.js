@@ -1,9 +1,9 @@
 // ============================================================
 //  Dünya Kupası Aile Tahmin Ligi
 // ============================================================
-import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY, AI_WORKER_URL } from "./firebase-config.js?v=23";
-import { FIXTURES } from "./fixtures.js?v=23";
-import { SUPER_LIG_FIXTURES } from "./fixtures-superlig.js?v=23";
+import { firebaseConfig, ADMIN_PIN, LIG_ADI, VAPID_KEY, AI_WORKER_URL } from "./firebase-config.js?v=24";
+import { FIXTURES } from "./fixtures.js?v=24";
+import { SUPER_LIG_FIXTURES } from "./fixtures-superlig.js?v=24";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -328,6 +328,9 @@ function setupTabs() {
       const page = btn.dataset.page;
       document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
       $("page-" + page).classList.add("active");
+      if (page === "league" && activeTour === "wc" && getWcChampion()) {
+        launchFireworks($("championFx"));
+      }
     });
   });
 }
@@ -474,7 +477,8 @@ function renderMatches() {
 // ============================================================
 //  LİG sayfası
 // ============================================================
-function renderLeaderboard() {
+// Belirli bir turnuva için sıralama listesini hesaplar
+function computeLeaderboardRows(tour) {
   // uid -> { name, pts, exact, outcome, played }
   const table = {};
   // Tüm kullanıcıları (ismi olanları) ekle
@@ -483,7 +487,7 @@ function renderLeaderboard() {
   for (const p of predictions) {
     const m = matches.find(x => x.id === p.matchId);
     if (!m) continue;
-    if (tourOf(m) !== activeTour) continue;   // sadece aktif turnuva
+    if (tourOf(m) !== tour) continue;   // sadece istenen turnuva
     if (!table[p.uid]) table[p.uid] = { name:p.name || "?", pts:0, exact:0, outcome:0, played:0 };
     if (m.finished) {
       const sc = scorePred(p, m);
@@ -496,6 +500,60 @@ function renderLeaderboard() {
 
   const rows = Object.entries(table).map(([id,v]) => ({ id, ...v }));
   rows.sort((a,b) => b.pts - a.pts || b.exact - a.exact || a.name.localeCompare(b.name));
+  return rows;
+}
+
+// Final maçı bittiyse Dünya Kupası ligimizin şampiyonunu döner
+function getWcChampion() {
+  const finalMatch = matches.find(m => tourOf(m) === "wc" && m.stage === "Final" && m.finished);
+  if (!finalMatch) return null;
+  const rows = computeLeaderboardRows("wc");
+  return rows[0] || null;
+}
+
+function renderChampionBanner(champion) {
+  const box = $("championBanner");
+  if (!box) return;
+  if (!champion) { box.classList.add("hidden"); box.innerHTML = ""; return; }
+  box.classList.remove("hidden");
+  box.innerHTML = `
+    <div class="champion-fx" id="championFx"></div>
+    <div class="champion-trophy">🏆</div>
+    <div class="champion-title">DÜNYA KUPASI ŞAMPİYONU</div>
+    <div class="champion-name">${esc(champion.name)}</div>
+    <div class="champion-sub">${champion.pts} puanla ligimizi kazandı — tebrikler! 🎉</div>
+  `;
+}
+
+// Şampiyon banner'ının üzerinde havai fişek patlamaları oluşturur
+function launchFireworks(container) {
+  if (!container) return;
+  const colors = ["#ffd83d", "#39ff14", "#4d8dff", "#ff4d6d", "#ffffff", "#ff9d00"];
+  const burst = (originX, originY) => {
+    for (let i = 0; i < 24; i++) {
+      const p = document.createElement("div");
+      p.className = "fw-particle";
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 40 + Math.random() * 90;
+      p.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+      p.style.setProperty("--dy", Math.sin(angle) * dist + "px");
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      p.style.left = originX + "%";
+      p.style.top = originY + "%";
+      p.style.animationDelay = (Math.random() * 0.15) + "s";
+      container.appendChild(p);
+      setTimeout(() => p.remove(), 1600);
+    }
+  };
+  burst(28, 45);
+  setTimeout(() => burst(72, 35), 300);
+  setTimeout(() => burst(50, 55), 600);
+}
+
+function renderLeaderboard() {
+  const rows = computeLeaderboardRows(activeTour);
+  const champion = activeTour === "wc" ? getWcChampion() : null;
+  renderChampionBanner(champion);
 
   const box = $("leaderboard");
   if (!rows.length) {

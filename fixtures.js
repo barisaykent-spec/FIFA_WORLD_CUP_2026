@@ -134,5 +134,8 @@ export const FIXTURES = [
 
   // --- YARI FİNAL (gerçek eşleşmeler, TSİ) ---
   { home: "Fransa",           away: "İspanya",          stage: "Yarı Final", kickoff: "2026-07-14T22:00" },
-  { home: "İngiltere",        away: "Arjantin",         stage: "Yarı Final", kickoff: "2026-07-15T22:00" }
+  { home: "İngiltere",        away: "Arjantin",         stage: "Yarı Final", kickoff: "2026-07-15T22:00" },
+
+  // --- FİNAL (gerçek eşleşme, TSİ — MetLife Stadium, New Jersey) ---
+  { home: "İspanya",          away: "Arjantin",         stage: "Final", kickoff: "2026-07-19T22:00" }
 ];
